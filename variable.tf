@@ -18,9 +18,9 @@ variable "public_sn_cidr" {
 }
 
 variable "auto_assign_pub_ip" {
-type = bool 
-default = true
-description = "Auto Assign Public IP on public subnet"
+  type        = bool
+  default     = true
+  description = "Auto Assign Public IP on public subnet"
 }
 
 variable "private_sn_cidr" {
@@ -69,7 +69,27 @@ variable "key_name" {
 }
 
 variable "web_instance" {
-type = bool 
-default = true
-description = "Only one instance on public subnet"
+  type        = bool
+  default     = true
+  description = "Only one instance on public subnet"
 }
+
+variable "rds" {
+  type = object({
+    allocated_storage     = number
+    max_allocated_storage = number
+    multi_az              = bool
+    storage_type          = string
+    engine                = string
+    engine_version        = string
+    instance_class        = string
+    identifier            = string
+    name                  = string
+    username              = string
+    password              = string
+    parameter_group_name  = string
+    skip_final_snapshot   = bool
+  final_snapshot_identifier = string })
+  description = "Collection of RDS creation variables"
+}
+

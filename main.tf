@@ -8,9 +8,9 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  count      = length(var.public_sn_cidr)
-  vpc_id     = aws_vpc.main.id
-  cidr_block = var.public_sn_cidr[count.index]
+  count                   = length(var.public_sn_cidr)
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_sn_cidr[count.index]
   map_public_ip_on_launch = var.auto_assign_pub_ip
 
   tags = {
@@ -94,33 +94,51 @@ resource "aws_eip" "nat" {
 
 
 resource "aws_security_group" "port_22" {
-    name = "port_22_ingress_globally_accessible"
-    description = "Allow SSH inbound traffic"
-    vpc_id      = aws_vpc.main.id
+  name        = "port_22_ingress_globally_accessible"
+  description = "Allow SSH inbound traffic"
+  vpc_id      = aws_vpc.main.id
 
 
-    ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_instance" "webserver" {
-  count         = var.web_instance == true ? 1 : length(var.public_sn_cidr)
-  instance_type = var.instance_type
-  ami           = var.image_id
-  key_name      = var.key_name
+  count                  = var.web_instance == true ? 1 : length(var.public_sn_cidr)
+  instance_type          = var.instance_type
+  ami                    = var.image_id
+  key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.port_22.id]
-  subnet_id = aws_subnet.public[count.index].id
-  user_data              = data.template_file.user_data.rendered
+  subnet_id              = aws_subnet.public[count.index].id
+  #user_data              = data.template_file.user_data.rendered
 
   tags = {
     Name = "TF_Server_Ubuntu_18.04"
   }
 }
 
-data "template_file" "user_data" {
-  template = file("install.sh")
+resource "aws_db_instance" "web-rds" {
+  allocated_storage         = var.rds.allocated_storage
+  max_allocated_storage     = var.rds.max_allocated_storage
+  multi_az                  = var.rds.multi_az
+  storage_type              = var.rds.storage_type
+  engine                    = var.rds.engine
+  engine_version            = var.rds.engine_version
+  instance_class            = var.rds.instance_class
+  identifier                = var.rds.identifier
+  name                      = var.rds.name
+  username                  = var.rds.username
+  password                  = var.rds.password
+  parameter_group_name      = var.rds.parameter_group_name
+  skip_final_snapshot       = var.rds.skip_final_snapshot
+  final_snapshot_identifier = var.rds.final_snapshot_identifier
 }
+
+
+/* data "template_file" "user_data" {
+  template = file("install.sh")
+}*/

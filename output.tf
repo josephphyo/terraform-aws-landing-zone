@@ -22,3 +22,13 @@ output "instance_public_dns" {
   value       = aws_instance.webserver[*].public_dns
   description = "Instance Public DNS"
 }
+
+output "rds_arn" {
+  value       = aws_db_instance.web-rds.arn
+  description = "RDS ARN"
+}
+
+output "rds_endpoint" {
+  value       = aws_db_instance.web-rds.endpoint
+  description = "RDS Endpoint"
+}
